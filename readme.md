@@ -22,9 +22,18 @@ make install
 ## Build TCL module
 ```bash
 git clone https://github.com/jerily/snappy-tcl.git
+export TCL_SNAPPY_DIR=$(pwd)/snappy-tcl
+cd ${TCL_SNAPPY_DIR}
 mkdir build
 cd build
 cmake ..
+make
+make install
+```
+
+## Build for NaviServer
+```bash
+cd ${TCL_SNAPPY_DIR}/
 make
 make install
 ```
