@@ -62,6 +62,36 @@ static int snappy_IsValidCompressedCmd(ClientData clientData, Tcl_Interp *interp
     return TCL_OK;
 }
 
+static int snappy_MaxCompressedLengthCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {
+    DBG(fprintf(stderr, "MaxCompressedLengthCmd\n"));
+    CheckArgs(2, 2, 1, "num_uncompressed_bytes");
+
+    long num_uncompressed_bytes;
+    if (Tcl_GetLongFromObj(interp, objv[1], &num_uncompressed_bytes) != TCL_OK) {
+        Tcl_SetObjResult(interp, Tcl_NewStringObj("num_uncompressed_bytes must be a long integer", -1));
+        return TCL_ERROR;
+    }
+    size_t max_compressed_length = snappy::MaxCompressedLength(num_uncompressed_bytes);
+    Tcl_SetObjResult(interp, Tcl_NewLongObj(max_compressed_length));
+    return TCL_OK;
+}
+
+
+static int snappy_GetUncompressedLengthCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {
+    DBG(fprintf(stderr, "GetUncompressedLengthCmd\n"));
+    CheckArgs(2, 2, 1, "bytes");
+
+    int length;
+    unsigned char *bytes = Tcl_GetByteArrayFromObj(objv[1], &length);
+    size_t uncompressed_length;
+    if (!snappy::GetUncompressedLength((const char *) bytes, length, &uncompressed_length)) {
+        Tcl_SetObjResult(interp, Tcl_NewStringObj("Invalid compressed data", -1));
+        return TCL_ERROR;
+    }
+    Tcl_SetObjResult(interp, Tcl_NewLongObj(uncompressed_length));
+    return TCL_OK;
+}
+
 static void snappy_ExitHandler(ClientData unused) {
 }
 
@@ -84,6 +114,8 @@ int Snappy_Init(Tcl_Interp *interp) {
     Tcl_CreateObjCommand(interp, "::snappy::compress", snappy_CompressCmd, nullptr, nullptr);
     Tcl_CreateObjCommand(interp, "::snappy::uncompress", snappy_UncompressCmd, nullptr, nullptr);
     Tcl_CreateObjCommand(interp, "::snappy::is_valid_compressed", snappy_IsValidCompressedCmd, nullptr, nullptr);
+    Tcl_CreateObjCommand(interp, "::snappy::max_compressed_length", snappy_MaxCompressedLengthCmd, nullptr, nullptr);
+    Tcl_CreateObjCommand(interp, "::snappy::get_uncompressed_length", snappy_GetUncompressedLengthCmd, nullptr, nullptr);
 
     return Tcl_PkgProvide(interp, "snappy", XSTR(PROJECT_VERSION));
 }

@@ -1,6 +1,6 @@
 # snappy-tcl
 
-TCL bindings for [snappy](https://github.com/google/snappy).
+TCL bindings for [snappy](https://github.com/google/snappy), a fast compressor/decompressor.
 Use them in TCL or NaviServer as loadable modules.
 
 ## Build Dependency
@@ -45,3 +45,7 @@ make install
     - returns an uncompressed byte array
 * **::snappy::is_valid_compressed** *bytes*
     - returns 1 if the byte array is a valid compressed byte array, 0 otherwise
+* **::snappy::max_compressed_length** *uncompressed_bytes*
+    - returns the maximum length of a compressed byte array
+* **::snappy::get_uncompressed_length** *compressed_bytes*
+    - returns the length of the uncompressed byte array
