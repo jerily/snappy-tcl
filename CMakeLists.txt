@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22.1)
-project(snappy-tcl VERSION 1.0.0 LANGUAGES CXX C)
+project(snappy-tcl VERSION 1.0.1 LANGUAGES CXX C)
 message(project: ${PROJECT_NAME})
 
 set(TARGET ${PROJECT_NAME})
