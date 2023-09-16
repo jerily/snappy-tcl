@@ -16,6 +16,10 @@ set(CMAKE_CXX_FLAGS "-DTCL_THREADS -DPROJECT_VERSION=${PROJECT_VERSION} ${CMAKE_
 add_library(${PROJECT_NAME} MODULE library.cc)
 set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
+if (NOT TCL_INCLUDE_PATH OR NOT TCL_LIBRARY)
+    include(${CMAKE_CURRENT_LIST_DIR}/FindTCL.cmake)
+endif ()
+
 include_directories(aws/ssm ${TCL_INCLUDE_PATH})
 link_directories(aws/ssm)
 target_link_libraries(snappy-tcl PRIVATE snappy ${TCL_LIBRARY})
