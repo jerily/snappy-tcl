@@ -5,10 +5,21 @@ Use them in TCL or NaviServer as loadable modules.
 
 ## Build Dependency
 
+Download latest stable version on Linux:
 ```bash
 wget https://github.com/google/snappy/archive/refs/tags/1.1.10.tar.gz
 tar -xzf 1.1.10.tar.gz
 cd snappy-1.1.10
+```
+
+Download latest version from git on MacOS:
+```bash
+git clone https://github.com/google/snappy.git
+cd snappy
+```
+
+Build and install:
+```bash
 mkdir build
 cd build
 cmake .. \
