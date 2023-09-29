@@ -1,3 +1,3 @@
 set dir [file dirname [info script]]
 
-package ifneeded snappy @PROJECT_VERSION@ [list load [file join $dir libsnappy-tcl.so]]
+package ifneeded snappy @PROJECT_VERSION@ [list load [file join $dir libsnappy-tcl[info sharedlibextension]]]

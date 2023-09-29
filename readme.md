@@ -21,13 +21,16 @@ make install
 
 ## Build TCL module
 ```bash
-wget https://github.com/jerily/snappy-tcl/archive/refs/tags/v1.0.1.tar.gz
-tar -xzf v1.0.1.tar.gz
-export TCL_SNAPPY_DIR=$(pwd)/snappy-tcl-1.0.1
+wget https://github.com/jerily/snappy-tcl/archive/refs/tags/v1.0.2.tar.gz
+tar -xzf v1.0.2.tar.gz
+export TCL_SNAPPY_DIR=$(pwd)/snappy-tcl-1.0.2
 cd ${TCL_SNAPPY_DIR}
 mkdir build
 cd build
-cmake ..
+cmake .. \
+  -DTCL_LIBRARY_DIR=/usr/local/lib \
+  -DTCL_INCLUDE_DIR=/usr/local/include \
+  -DSNAPPY_DIR=/usr/local
 make
 make install
 ```
