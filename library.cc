@@ -9,6 +9,14 @@
 #include <fstream>
 #include "library.h"
 
+#ifndef TCL_SIZE_MAX
+typedef int Tcl_Size;
+# define Tcl_GetSizeIntFromObj Tcl_GetIntFromObj
+# define Tcl_NewSizeIntObj Tcl_NewIntObj
+# define TCL_SIZE_MAX      INT_MAX
+# define TCL_SIZE_MODIFIER ""
+#endif
+
 #define XSTR(s) STR(s)
 #define STR(s) #s
 
@@ -30,7 +38,7 @@ static int snappy_CompressCmd(ClientData clientData, Tcl_Interp *interp, int obj
     DBG(fprintf(stderr, "CompressCmd\n"));
     CheckArgs(2, 2, 1, "bytes");
 
-    int length;
+    Tcl_Size length;
     unsigned char *bytes = Tcl_GetByteArrayFromObj(objv[1], &length);
     std::string compressed;
     snappy::Compress((const char *) bytes, length, &compressed);
@@ -42,7 +50,7 @@ static int snappy_UncompressCmd(ClientData clientData, Tcl_Interp *interp, int o
     DBG(fprintf(stderr, "UncompressCmd\n"));
     CheckArgs(2, 2, 1, "bytes");
 
-    int length;
+    Tcl_Size length;
     unsigned char *bytes = Tcl_GetByteArrayFromObj(objv[1], &length);
     std::string uncompressed;
     snappy::Uncompress((const char *) bytes, length, &uncompressed);
@@ -54,7 +62,7 @@ static int snappy_IsValidCompressedCmd(ClientData clientData, Tcl_Interp *interp
     DBG(fprintf(stderr, "IsValidCompressedCmd\n"));
     CheckArgs(2, 2, 1, "bytes");
 
-    int length;
+    Tcl_Size length;
     unsigned char *bytes = Tcl_GetByteArrayFromObj(objv[1], &length);
     std::string uncompressed;
     bool flag = snappy::IsValidCompressedBuffer((const char *) bytes, length);
@@ -81,7 +89,7 @@ static int snappy_GetUncompressedLengthCmd(ClientData clientData, Tcl_Interp *in
     DBG(fprintf(stderr, "GetUncompressedLengthCmd\n"));
     CheckArgs(2, 2, 1, "bytes");
 
-    int length;
+    Tcl_Size length;
     unsigned char *bytes = Tcl_GetByteArrayFromObj(objv[1], &length);
     size_t uncompressed_length;
     if (!snappy::GetUncompressedLength((const char *) bytes, length, &uncompressed_length)) {

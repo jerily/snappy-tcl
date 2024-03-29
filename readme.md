@@ -32,9 +32,9 @@ make install
 
 ## Build TCL module
 ```bash
-wget https://github.com/jerily/snappy-tcl/archive/refs/tags/v1.0.3.tar.gz
-tar -xzf v1.0.3.tar.gz
-export TCL_SNAPPY_DIR=$(pwd)/snappy-tcl-1.0.3
+wget https://github.com/jerily/snappy-tcl/archive/refs/tags/v1.0.4.tar.gz
+tar -xzf v1.0.4.tar.gz
+export TCL_SNAPPY_DIR=$(pwd)/snappy-tcl-1.0.4
 cd ${TCL_SNAPPY_DIR}
 mkdir build
 cd build
