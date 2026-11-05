@@ -14,7 +14,8 @@ MODOBJS     = library.o
 
 MODLIBS  += -lsnappy
 
-CFLAGS += -DUSE_NAVISERVER
+PROJECT_VERSION := $(shell awk '/^project/ {print $$3}' CMakeLists.txt)
+CFLAGS += -DUSE_NAVISERVER -DPROJECT_VERSION=$(PROJECT_VERSION)
 CXXFLAGS += $(CFLAGS)
 
 include  $(NAVISERVER)/include/Makefile.module

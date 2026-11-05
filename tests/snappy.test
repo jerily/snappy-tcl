@@ -1,0 +1,106 @@
+package require tcltest 2
+package require snappy 1.0.5
+namespace import ::tcltest::test
+
+test snappy-1.1 {empty input is a valid raw block} -body {
+    set compressed [snappy::compress {}]
+    list [binary encode hex $compressed] [snappy::is_valid_compressed $compressed] \
+        [snappy::get_uncompressed_length $compressed] [snappy::uncompress $compressed]
+} -result {00 1 0 {}}
+
+test snappy-1.2 {all byte values round trip, including NUL and high bytes} -body {
+    set values {}
+    for {set i 0} {$i < 256} {incr i} {lappend values $i}
+    set bytes [binary format c* $values]
+    set compressed [snappy::compress $bytes]
+    list [expr {[snappy::uncompress $compressed] eq $bytes}] \
+        [snappy::get_uncompressed_length $compressed]
+} -result {1 256}
+
+test snappy-1.3 {UTF-8 text round trips with explicit encoding} -body {
+    set text "Hello, \u03ba\u03cc\u03c3\u03bc\u03b5! \u4e16\u754c"
+    set bytes [encoding convertto utf-8 $text]
+    set restored [snappy::uncompress [snappy::compress $bytes]]
+    expr {[encoding convertfrom utf-8 $restored] eq $text}
+} -result 1
+
+test snappy-1.4 {input spanning multiple Snappy blocks round trips} -body {
+    set bytes [string repeat abcdefghijklmnopqrstuvwxyz 10000]
+    set compressed [snappy::compress $bytes]
+    list [expr {[snappy::uncompress $compressed] eq $bytes}] \
+        [expr {[string length $compressed] <= [snappy::max_compressed_length [string length $bytes]]}]
+} -result {1 1}
+
+test snappy-1.5 {decode a known raw Snappy literal block} -body {
+    snappy::uncompress [binary decode hex 0b2868656c6c6f20776f726c64]
+} -result {hello world}
+
+foreach {name hex} {
+    empty {}
+    unfinished-varint 80
+    missing-literal 0100
+    invalid-copy 010100
+    trailing-data 0000
+    oversized-varint ffffffff1f
+    large-header-only ffffffff0f
+} {
+    test snappy-invalid-$name {reject corrupt blocks without allocating from their headers} -body {
+        set bytes [binary decode hex $hex]
+        set status [catch {snappy::uncompress $bytes} message options]
+        list [snappy::is_valid_compressed $bytes] $status $message [dict get $options -errorcode]
+    } -result {0 1 {Invalid compressed data} {SNAPPY INVALID_DATA}}
+}
+
+test snappy-2.1 {truncated valid block is rejected} -body {
+    set compressed [snappy::compress [string repeat hello 100]]
+    snappy::uncompress [string range $compressed 0 end-1]
+} -returnCodes error -result {Invalid compressed data}
+
+test snappy-2.2 {invalid header length is rejected} -body {
+    snappy::get_uncompressed_length [binary decode hex 80]
+} -returnCodes error -result {Invalid compressed data}
+
+test snappy-2.3 {length query reads the header, without validating the payload} -body {
+    snappy::get_uncompressed_length [binary decode hex ffffffff0f]
+} -result 4294967295
+
+test snappy-3.1 {maximum compressed length of empty input} -body {
+    snappy::max_compressed_length 0
+} -result 32
+
+foreach value {-1 4294967296 9223372036854775807} {
+    test snappy-size-$value {reject lengths outside the raw Snappy format} -body {
+        snappy::max_compressed_length $value
+    } -returnCodes error -result {num_uncompressed_bytes must be between 0 and 4294967295}
+}
+
+test snappy-3.2 {reject noninteger length} -body {
+    snappy::max_compressed_length nope
+} -returnCodes error -match glob -result {*integer*}
+
+::tcltest::testConstraint size64 [expr {$::tcl_platform(pointerSize) >= 8}]
+test snappy-3.3 {wide length results are not truncated to a signed 32-bit integer} -constraints size64 -body {
+    snappy::max_compressed_length 4294967295
+} -result 5010795209
+
+foreach command {compress uncompress is_valid_compressed max_compressed_length get_uncompressed_length} {
+    test snappy-args-$command {commands require exactly one argument} -body {
+        list [catch {snappy::$command}] [catch {snappy::$command a b}]
+    } -result {1 1}
+}
+
+test snappy-4.1 {package can be loaded into independent interpreters} -body {
+    set results {}
+    foreach child {snappy_child_1 snappy_child_2} {
+        interp create $child
+        try {
+            $child eval [list load $::snappy_test_library Snappy]
+            lappend results [$child eval {snappy::uncompress [snappy::compress hello]}]
+        } finally {
+            interp delete $child
+        }
+    }
+    set results
+} -result {hello hello}
+
+::tcltest::cleanupTests
