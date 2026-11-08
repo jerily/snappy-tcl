@@ -54,7 +54,7 @@ set `TCL_INCLUDE_PATH`, `TCL_STUB_LIBRARY`, and `TCL_TCLSH` directly; for exampl
 `/usr/bin/tclsh8.6` on Debian. Tests require a matching Tcl shell with `tcltest`;
 set `BUILD_TESTING=OFF` when building without a runnable interpreter.
 
-The library and `pkgIndex.tcl` install under `lib/snappy-tcl1.0.5`. Examples
+The library and `pkgIndex.tcl` install under `lib/snappy-tcl1.0.6`. Examples
 install under `share/snappy-tcl/examples`.
 
 ### Static embedding
